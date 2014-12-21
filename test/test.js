@@ -110,6 +110,39 @@ describe('Paperwork', function () {
       });
     });
   });
+  
+  describe('Date support', function() {
+    var schema = {
+      date: Date
+    }
+    
+    it('should make Date as Date', function(done) {
+      var blob = {
+        date: '2012-04-21T18:25:43-05:00',
+      };
+           
+      paperwork(schema, blob, function (err, validated) {
+        should.not.exist(err);
+        should.exist(validated);
+        validated.date.should.be.an.instanceOf(Date)
+        validated.date.should.eql(new Date(blob.date));        
+        done();
+      });      
+    });
+    
+    it('should fail if there is no valied Date', function(done) {
+      var blob = {
+        date: 'invalid date',
+      };
+
+      paperwork(schema, blob, function (err, validated) {
+        should.exist(err);
+        should.not.exist(validated);
+        err.should.eql(['body.date: should be a Date']);
+        done();
+      });
+    });
+  });
 
   describe('Optional', function () {
     var withOption = {
