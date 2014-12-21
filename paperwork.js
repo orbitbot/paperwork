@@ -76,7 +76,7 @@ function paperwork(spec, val, visitor) {
     return visitor.checkType(val, 'number');
 
   if (spec === Array)
-    return visitor.checkType(val, _.isArray, 'should be an array');
+    return visitor.checkFun(val, _.isArray, 'should be an array');
 
   if (spec instanceof Multiple) {
     var allGood = _.all(spec.mult, function (spec) {
