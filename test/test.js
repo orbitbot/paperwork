@@ -367,7 +367,7 @@ describe('Paperwork', function () {
       });
     });
 
-    it('should invalidate with Express middleware', function () {
+    it('should invalidate with Express middleware', function (done) {
       var fakeReq = {
         body: {
           alias: /laurent;/,
@@ -380,13 +380,16 @@ describe('Paperwork', function () {
       var fakeRes = httpMocks.createResponse();
       sinon.spy(fakeRes, 'end')
 
-      paperwork.accept(simple)(fakeReq, fakeRes, function () {
-        done(new Error('done() should not have been called'));
+      paperwork.accept(simple)(fakeReq, fakeRes, function next(err) {
+        
+        should.exist(err);
+        should.exist(err.errors);
+        
+        err.status.should.equal(400, 'status code should be 400');
+        err.message.should.equal('Body did not satisfy requirements');
+        
+        done();
       });
-
-      fakeRes.statusCode.should.equal(400, 'status code should be 400');
-      fakeRes.end.called.should.equal(true, 'end() should have been called');
-      fakeRes._getData().should.match(/bad_request/)
     });
   });
 });

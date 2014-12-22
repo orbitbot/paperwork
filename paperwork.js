@@ -156,13 +156,11 @@ module.exports.accept = function (spec) {
       return next();
     }
 
-    res.statusCode = 400;
-    var response = {
-      status: 'bad_request',
-      reason: 'Body did not satisfy requirements',
-      errors: visitor.errors
-    }
-    res.end(JSON.stringify({status: 'bad_request', reason: 'Body did not satisfy requirements', errors: visitor.errors}, null, '  '))
+    var error = new Error('Body did not satisfy requirements');
+    error.status = 400;
+    error.errors = visitor.errors;
+
+    next(error);
   };
 };
 
