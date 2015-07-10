@@ -79,7 +79,7 @@ function paperwork(spec, val, visitor) {
     return visitor.checkFun(new Date(val), isValidDate, 'should be a Date');
 
   if (spec === Array)
-    return visitor.checkType(val, _.isArray, 'should be an array');
+    return visitor.checkFun(val, _.isArray, 'should be an array');
 
   if (spec instanceof Multiple) {
     var allGood = _.all(spec.mult, function (spec) {
