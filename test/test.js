@@ -110,6 +110,39 @@ describe('Paperwork', function () {
       });
     });
   });
+  
+  describe('Date support', function() {
+    var schema = {
+      date: Date
+    }
+    
+    it('should make Date as Date', function(done) {
+      var blob = {
+        date: '2012-04-21T18:25:43-05:00',
+      };
+           
+      paperwork(schema, blob, function (err, validated) {
+        should.not.exist(err);
+        should.exist(validated);
+        validated.date.should.be.an.instanceOf(Date)
+        validated.date.should.eql(new Date(blob.date));        
+        done();
+      });      
+    });
+    
+    it('should fail if there is no valied Date', function(done) {
+      var blob = {
+        date: 'invalid date',
+      };
+
+      paperwork(schema, blob, function (err, validated) {
+        should.exist(err);
+        should.not.exist(validated);
+        err.should.eql(['body.date: should be a Date']);
+        done();
+      });
+    });
+  });
 
   describe('Optional', function () {
     var withOption = {
@@ -334,7 +367,7 @@ describe('Paperwork', function () {
       });
     });
 
-    it('should invalidate with Express middleware', function () {
+    it('should invalidate with Express middleware', function (done) {
       var fakeReq = {
         body: {
           alias: /laurent;/,
@@ -347,13 +380,16 @@ describe('Paperwork', function () {
       var fakeRes = httpMocks.createResponse();
       sinon.spy(fakeRes, 'end')
 
-      paperwork.accept(simple)(fakeReq, fakeRes, function () {
-        done(new Error('done() should not have been called'));
+      paperwork.accept(simple)(fakeReq, fakeRes, function next(err) {
+        
+        should.exist(err);
+        should.exist(err.errors);
+        
+        err.status.should.equal(400, 'status code should be 400');
+        err.message.should.equal('Body did not satisfy requirements');
+        
+        done();
       });
-
-      fakeRes.statusCode.should.equal(400, 'status code should be 400');
-      fakeRes.end.called.should.equal(true, 'end() should have been called');
-      fakeRes._getData().should.match(/bad_request/)
     });
   });
 

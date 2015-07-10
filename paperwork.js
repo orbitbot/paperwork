@@ -74,6 +74,9 @@ function paperwork(spec, val, visitor) {
 
   if (spec === Number)
     return visitor.checkType(val, 'number');
+  
+  if (spec === Date)
+    return visitor.checkFun(new Date(val), isValidDate, 'should be a Date');
 
   if (spec === Array)
     return visitor.checkType(val, _.isArray, 'should be an array');
@@ -102,6 +105,10 @@ function paperwork(spec, val, visitor) {
       return paperwork(itemSpec, item, visitor.enterArray(i));
     });
   }
+  
+  if (isValidDate(spec)) {
+    return new Date(val);
+  }
 
   if (_.isObject(spec)) {
     if (!visitor.checkFun(val, _.isObject, 'should be an object'))
@@ -119,6 +126,10 @@ function paperwork(spec, val, visitor) {
 
 function getFunctionName(fun) {
   return fun.name || 'custom validator';
+}
+
+function isValidDate(date) {
+  return (_.isDate(date) && !_.isNaN(date.getTime()));
 }
 
 module.exports = function (spec, blob, done) {
@@ -145,13 +156,11 @@ module.exports.accept = function (spec) {
       return next();
     }
 
-    res.statusCode = 400;
-    var response = {
-      status: 'bad_request',
-      reason: 'Body did not satisfy requirements',
-      errors: visitor.errors
-    }
-    res.end(JSON.stringify({status: 'bad_request', reason: 'Body did not satisfy requirements', errors: visitor.errors}, null, '  '))
+    var error = new Error('Body did not satisfy requirements');
+    error.status = 400;
+    error.errors = visitor.errors;
+
+    next(error);
   };
 };
 
