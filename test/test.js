@@ -355,6 +355,62 @@ describe('Paperwork', function () {
       fakeRes.end.called.should.equal(true, 'end() should have been called');
       fakeRes._getData().should.match(/bad_request/);
     });
+
+    describe('custom validation middleware', function() {
+      var cookieSpec = {
+        'connect.sid': String
+      };
+
+      it('should validate with custom middleware', function(done) {
+        var fakeReq = {
+          cookies: {
+            'connect.sid': 'mellon',
+          }
+        };
+        var fakeRes = httpMocks.createResponse();
+
+        paperwork.accept(cookieSpec, 'cookies')(fakeReq, fakeRes, function() {
+          should.exist(fakeReq.cookies);
+          fakeReq.cookies.should.have.property('connect.sid', 'mellon');
+          done();
+        });
+      });
+
+      it('should invalidate with custom middleware', function(done) {
+        var fakeReq = {
+          cookies: {}
+        };
+        var fakeRes = httpMocks.createResponse();
+        sinon.spy(fakeRes, 'end');
+
+
+        paperwork.accept(cookieSpec, 'cookies')(fakeReq, fakeRes, function() {
+          done(new Error('done() should not have been called'));
+        });
+
+        fakeRes.statusCode.should.equal(400, 'status code should be 400');
+        fakeRes.end.called.should.equal(true, 'end() should have been called');
+        fakeRes._getData().should.match(/bad_request/);
+        done();
+      });
+
+      it('does not remove extra fields', function(done) {
+        var fakeReq = {
+          cookies: {
+            'connect.sid': 'mellon',
+            extra: true
+          }
+        };
+        var fakeRes = httpMocks.createResponse();
+
+        paperwork.accept(cookieSpec, 'cookies')(fakeReq, fakeRes, function() {
+          should.exist(fakeReq.cookies);
+          should.exist(fakeReq.cookies.extra);
+          done();
+        });
+      });
+
+    });
   });
 
   describe('.validator()', function () {
