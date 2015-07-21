@@ -28,7 +28,6 @@
   },
   "devDependencies": {
     "mocha": "^2.0.1",
-    "node-mocks-http": "^1.2.1",
     "should": "*",
     "sinon": "^1.12.2"
   },

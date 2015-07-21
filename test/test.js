@@ -308,7 +308,6 @@ describe('Paperwork', function () {
   });
 
   describe('Express', function () {
-    var httpMocks = require('node-mocks-http');
     var simple = {
       alias: /^[a-z0-9]+$/,
       name: String,
@@ -325,18 +324,14 @@ describe('Paperwork', function () {
           age: 32
         }
       };
+      var fakeRes = {};
 
-      var fakeRes = httpMocks.createResponse();
-      sinon.spy(fakeRes, 'send');
-      sinon.spy(fakeRes, 'end');
-
-      paperwork.accept(simple)(fakeReq, fakeRes, function () {
+      paperwork.accept(simple)(fakeReq, fakeRes, function (err) {
         should.exist(fakeReq.body);
+        should.not.exist(err);
         fakeReq.body.should.have.property('alias', 'laurent');
         fakeReq.body.should.have.property('admin', false);
-        fakeRes.send.called.should.equal(false, 'res.send() should not have been called');
-        fakeRes.end.called.should.equal(false, 'res.end() should not have been called');
-        fakeRes._getData().should.equal('');
+
         done();
       });
     });
@@ -351,15 +346,11 @@ describe('Paperwork', function () {
           age: 32
         }
       };
+      var fakeRes = {};
 
-      var fakeRes = {
-        send: function (code, json) {
-          done(new Error('res.send() should not have been called'));
-        }
-      };
-
-      paperwork.accept(simple)(fakeReq, fakeRes, function () {
+      paperwork.accept(simple)(fakeReq, fakeRes, function (err) {
         should.exist(fakeReq.body);
+        should.not.exist(err);
         fakeReq.body.should.have.property('alias', 'laurent');
         fakeReq.body.should.have.property('admin', false);
         fakeReq.body.should.not.have.property('id');
@@ -376,8 +367,7 @@ describe('Paperwork', function () {
           age: 32
         }
       };
-
-      var fakeRes = httpMocks.createResponse();
+      var fakeRes = {};
 
       paperwork.accept(simple)(fakeReq, fakeRes, function next(err) {
         should.exist(err);
@@ -394,6 +384,7 @@ describe('Paperwork', function () {
       var cookieSpec = {
         'connect.sid': String
       };
+      var fakeRes = {};
 
       it('should validate with custom middleware', function(done) {
         var fakeReq = {
@@ -401,7 +392,6 @@ describe('Paperwork', function () {
             'connect.sid': 'mellon',
           }
         };
-        var fakeRes = httpMocks.createResponse();
 
         paperwork.accept(cookieSpec, 'cookies')(fakeReq, fakeRes, function() {
           should.exist(fakeReq.cookies);
@@ -414,7 +404,6 @@ describe('Paperwork', function () {
         var fakeReq = {
           cookies: {}
         };
-        var fakeRes = httpMocks.createResponse();
 
         paperwork.accept(cookieSpec, 'cookies')(fakeReq, fakeRes, function(err) {
           should.exist(err);
@@ -434,7 +423,6 @@ describe('Paperwork', function () {
             extra: true
           }
         };
-        var fakeRes = httpMocks.createResponse();
 
         paperwork.accept(cookieSpec, 'cookies')(fakeReq, fakeRes, function() {
           should.exist(fakeReq.cookies);
