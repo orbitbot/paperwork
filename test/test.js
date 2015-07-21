@@ -33,7 +33,7 @@ describe('Paperwork', function () {
         err.should.eql(['body: should be an object']);
         done();
       });
-    })
+    });
 
     it('should invalidate blob with one missing field', function (done) {
       var blob = {
@@ -114,9 +114,9 @@ describe('Paperwork', function () {
   describe('Date support', function() {
     var schema = {
       date: Date
-    }
+    };
     
-    it('should make Date as Date', function(done) {
+    it('should convert Date string to Date object', function(done) {
       var blob = {
         date: '2012-04-21T18:25:43-05:00',
       };
@@ -124,13 +124,13 @@ describe('Paperwork', function () {
       paperwork(schema, blob, function (err, validated) {
         should.not.exist(err);
         should.exist(validated);
-        validated.date.should.be.an.instanceOf(Date)
-        validated.date.should.eql(new Date(blob.date));        
+        validated.date.should.be.an.instanceOf(Date);
+        validated.date.should.eql(new Date(blob.date));
         done();
-      });      
+      });
     });
     
-    it('should fail if there is no valied Date', function(done) {
+    it('should fail if there is no valid Date', function(done) {
       var blob = {
         date: 'invalid date',
       };
@@ -150,7 +150,7 @@ describe('Paperwork', function () {
       name: String,
       admin: Boolean,
       country: paperwork.optional(/^[a-z]{2}$/)
-    }
+    };
 
     it('should validate blob with optional spec', function (done) {
       var blob = {
@@ -378,10 +378,8 @@ describe('Paperwork', function () {
       };
 
       var fakeRes = httpMocks.createResponse();
-      sinon.spy(fakeRes, 'end')
 
       paperwork.accept(simple)(fakeReq, fakeRes, function next(err) {
-        
         should.exist(err);
         should.exist(err.errors);
         
@@ -417,8 +415,6 @@ describe('Paperwork', function () {
           cookies: {}
         };
         var fakeRes = httpMocks.createResponse();
-        sinon.spy(fakeRes, 'end');
-
 
         paperwork.accept(cookieSpec, 'cookies')(fakeReq, fakeRes, function(err) {
           should.exist(err);
