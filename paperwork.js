@@ -142,16 +142,18 @@ module.exports = function (spec, blob, done) {
     done(null, validated);
 };
 
-module.exports.accept = function (spec) {
+function middleware(spec, inspect) {
   return function (req, res, next) {
-    if (!req.body)
-      throw new Error('express.bodyParser() not enabled');
+    var component = inspect || 'body';
+    if (!req[component])
+      throw new Error('parser middleware for request ' + component + ' not enabled');
 
-    var visitor = new Visitor(),
-        validated = paperwork(spec, req.body, visitor);
+    var visitor = new Visitor(component),
+        validated = paperwork(spec, req[component], visitor);
 
     if (!visitor.hasErrors()) {
-      req.body = validated;
+      if (component === 'body')
+        req.body = validated;
 
       return next();
     }
@@ -162,7 +164,12 @@ module.exports.accept = function (spec) {
 
     next(error);
   };
-};
+}
+
+module.exports.accept = middleware;
+module.exports.json   = function(spec) { return middleware(spec); };
+module.exports.query  = function(spec) { return middleware(spec, 'query'); };
+module.exports.url    = function(spec) { return middleware(spec, 'params'); };
 
 module.exports.validator = function (spec) {
   return module.exports.bind(null, spec);
